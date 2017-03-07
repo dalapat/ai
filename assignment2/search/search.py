@@ -96,7 +96,7 @@ def depthFirstSearch(problem):
         for successor in successors:
             if successor[0] not in visited:
                 stack.push((successor[0], path + [successor[1]], 1))
-                visited[curr_state] = curr_state
+                # visited[curr_state] = curr_state
     return path
 
 def breadthFirstSearch(problem):
