@@ -154,6 +154,41 @@ def uniformCostSearch(problem):
 
     return path
 
+def iterativeDeepening(problem):
+    limit = 0
+    found = False
+    path = []
+    while not found:
+        path, found = depthLimitedSearch(problem, limit)
+        limit += 1
+    return path
+
+def depthLimitedSearch(problem, limit):
+    curr_level = 0
+    stack = util.Stack()
+    start_state = problem.getStartState()
+    path = []
+    found = False
+    stack.push((start_state, path, 0, 0))
+    visited = {}
+    while not stack.isEmpty():
+        curr_state, path, cost, curr_depth = stack.pop()
+        if curr_depth > limit:
+            break
+        if problem.isGoalState(curr_state):
+            found = True
+            break
+        visited[curr_state] = curr_state
+        successors = problem.getSuccessors(curr_state)
+        for successor in successors:
+            state, p, cost = successor
+            if state not in visited:
+                visited[state] = state
+                stack.push((state, path + [p], cost, curr_depth + 1))
+    return [path, found]
+
+
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -193,7 +228,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             else:
                 if problem.getCostOfActions(path + [p]) < visited[state][2]:
                     visited[state] = to_push
-                    q.push(to_push, problem.getCostOfActions(path + [p]) + heuristic(state, problem))
+                    q.push(to_push, \
+                           problem.getCostOfActions(path + [p]) + heuristic(state, problem))
 
     return path
 
