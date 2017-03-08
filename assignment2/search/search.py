@@ -125,8 +125,11 @@ def uniformCostSearch(problem):
     visited = {}
     q.push((start_state, path, 0), 0)
     while not q.isEmpty():
-        curr_state, path, cost = q.pop()
-
+        #curr_state, path, cost = q.pop()
+        temp = q.pop()
+        curr_state = temp[0]
+        path = temp[1]
+        cost = temp[2]
         if curr_state in visited:
             prior_node = visited[curr_state]
             if problem.getCostOfActions(path) < prior_node[2]:
@@ -134,12 +137,12 @@ def uniformCostSearch(problem):
                 prior_node[2] = problem.getCostOfActions(path)
                 visited[curr_state] = prior_node
         else:
-            visited[curr_state] = (curr_state, path, cost)
+            visited[curr_state] = [curr_state, path, cost]
         if problem.isGoalState(curr_state): break
         successors = problem.getSuccessors(curr_state)
         for successor in successors:
             state, p, c = successor
-            to_push = (state, path + [p], cost + c)
+            to_push = [state, path + [p], cost + c]
             if state not in visited:
                 visited[state] = to_push
                 q.push(to_push, cost + c)
@@ -160,8 +163,39 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    q = util.PriorityQueue()
+    start_state = problem.getStartState()
+    path = []
+    visited = {}
+    q.push((start_state, path, 0), 0)
+    while not q.isEmpty():
+        curr_state, path, cost = q.pop()
+
+        if curr_state in visited:
+            prior_node = visited[curr_state]
+            if problem.getCostOfActions(path) < prior_node[2]:
+                prior_node[1] = path
+                prior_node[2] = problem.getCostOfActions(path)
+                visited[curr_state] = prior_node
+        else:
+            visited[curr_state] = [curr_state, path, cost]
+        if problem.isGoalState(curr_state): break
+        successors = problem.getSuccessors(curr_state)
+        for successor in successors:
+            state, p, c = successor
+            to_push = [state, path + [p], \
+                       problem.getCostOfActions(path + [p]) + heuristic(state, problem)]
+            if state not in visited:
+                visited[state] = to_push
+                q.push(to_push, \
+                       problem.getCostOfActions(path + [p]) + heuristic(state, problem))
+
+            else:
+                if problem.getCostOfActions(path + [p]) < visited[state][2]:
+                    visited[state] = to_push
+                    q.push(to_push, problem.getCostOfActions(path + [p]) + heuristic(state, problem))
+
+    return path
 
 
 # Abbreviations
