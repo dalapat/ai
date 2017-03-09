@@ -449,6 +449,9 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+    def getGameState(self):
+        return self.startingGameState
+
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -485,13 +488,28 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    x, y  = position
     food_list = foodGrid.asList()
-    distances = [0]
-    for food_cell in food_list:
-        cx, cy = food_cell
-        distances.append(util.manhattanDistance(position, food_cell))
-    return max(distances)
+    gameState = problem.getGameState()
+    distances = []
+    md_farthest = 0
+    closer = 0
+    for cell in food_list:
+        distances.append((util.manhattanDistance(position, cell), cell))
+    distances.sort()
+    '''
+    if len(distances) >= 2:
+        md_farthest = util.manhattanDistance(distances[-1][1], distances[-2][1])
+        closer = util.manhattanDistance(position, distances[-2][1])
+    elif len(distances) == 1:
+        closer = util.manhattanDistance(position, distances[-1][1])
+    else:
+        return 0
+    return md_farthest + closer
+    '''
+    if len(distances) > 0:
+        return mazeDistance(position, distances[-1][1], gameState)
+    return 0
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
