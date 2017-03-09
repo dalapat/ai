@@ -385,6 +385,7 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     mdists = [0]
+    wscores = [0]
     for corner in state[1]:
         if not corner[1]:
             mdists.append(util.manhattanDistance(state[0], corner[0]))
@@ -448,6 +449,9 @@ class FoodSearchProblem:
             cost += 1
         return cost
 
+    def getGameState(self):
+        return self.startingGameState
+
 class AStarFoodSearchAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
     def __init__(self):
@@ -483,6 +487,29 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+    "*** YOUR CODE HERE ***"
+    food_list = foodGrid.asList()
+    gameState = problem.getGameState()
+    distances = []
+    md_farthest = 0
+    closer = 0
+    for cell in food_list:
+        distances.append((util.manhattanDistance(position, cell), cell))
+    distances.sort()
+    '''
+    if len(distances) >= 2:
+        md_farthest = util.manhattanDistance(distances[-1][1], distances[-2][1])
+        closer = util.manhattanDistance(position, distances[-2][1])
+    elif len(distances) == 1:
+        closer = util.manhattanDistance(position, distances[-1][1])
+    else:
+        return 0
+    return md_farthest + closer
+    '''
+    if len(distances) > 0:
+        return mazeDistance(position, distances[-1][1], gameState)
+    return 0
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
