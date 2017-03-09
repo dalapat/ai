@@ -385,7 +385,6 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     mdists = [0]
-    wscores = [0]
     for corner in state[1]:
         if not corner[1]:
             mdists.append(util.manhattanDistance(state[0], corner[0]))
@@ -484,8 +483,6 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
