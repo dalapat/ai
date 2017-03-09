@@ -72,52 +72,51 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
-def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
+def genericSearch(problem, container, push):
 
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-    """
-
-    stack = util.Stack()
-    start_state = problem.getStartState()
-    path = []
+    # keep track of the visited node
     visited = {}
-    stack.push((start_state, path, 1))
-    while not stack.isEmpty():
-        curr_state, path, cost = stack.pop()
-        visited[curr_state] = curr_state
-        if problem.isGoalState(curr_state): break
-        successors = problem.getSuccessors(curr_state)
-        for successor in successors:
-            if successor[0] not in visited:
-                stack.push((successor[0], path + [successor[1]], 1))
-                # visited[curr_state] = curr_state
-    return path
+
+    # push start state to the container
+    push(container, (problem.getStartState(), [], 0), 0)
+    
+    # while we still have nodes to explore
+    while not container.isEmpty():
+        state, path, cost = container.pop()
+
+        # check if we have reached a goal. Return the list of actions if true.
+        if problem.isGoalState(state):
+            return path
+
+        # otherwise, expand.
+        if not state in visited:
+            visited[state] = state
+            for successor in problem.getSuccessors(state):
+                state = (successor[0], path + [successor[1]], cost + successor[2])
+                push(container, state, cost + successor[2])
+
+    # if no valid path is found, return empty
+    return []
+        
+
+
+def depthFirstSearch(problem):
+    """Search the deepest nodes in the search tree first."""
+
+    container = util.Stack()
+    def push(container, state, cost):
+        container.push(state)
+    return genericSearch(problem, container, push)
+
+    
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    queue = util.Queue()
-    start_state = problem.getStartState()
-    path = []
-    visited = {}
-    queue.push((start_state, path, 1))
-    # visited[start_state] = start_state
-    while not queue.isEmpty():
-        curr_state, path, cost = queue.pop()
-        visited[curr_state] = curr_state
-        if problem.isGoalState(curr_state): return path
-        successors = problem.getSuccessors(curr_state)
-        for successor in successors:
-            if successor[0] not in visited:
-                visited[successor[0]] = successor[0]
-                queue.push((successor[0], path + [successor[1]], 1))
-    print path
-    return []
+    container = util.Queue()
+    def push(container, state, cost):
+        container.push(state)
+    return genericSearch(problem, container, push)
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
