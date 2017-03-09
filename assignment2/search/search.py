@@ -73,32 +73,23 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def genericSearch(problem, container, push):
-
-    # keep track of the visited node
+    
     visited = {}
-
-    # push start state to the container
     push(container, (problem.getStartState(), [], 0), 0)
     
-    # while we still have nodes to explore
     while not container.isEmpty():
         state, path, cost = container.pop()
-
-        # check if we have reached a goal. Return the list of actions if true.
+        
         if problem.isGoalState(state):
             return path
 
-        # otherwise, expand.
         if not state in visited:
             visited[state] = state
             for successor in problem.getSuccessors(state):
                 state = (successor[0], path + [successor[1]], cost + successor[2])
                 push(container, state, cost + successor[2])
-
-    # if no valid path is found, return empty
+                
     return []
-        
-
 
 def depthFirstSearch(problem):
     """Search the deepest nodes in the search tree first."""
@@ -120,40 +111,26 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    q = util.PriorityQueue()
-    start_state = problem.getStartState()
-    path = []
-    visited = {}
-    q.push((start_state, path, 0), 0)
-    while not q.isEmpty():
-        #curr_state, path, cost = q.pop()
-        temp = q.pop()
-        curr_state = temp[0]
-        path = temp[1]
-        cost = temp[2]
-        if curr_state in visited:
-            prior_node = visited[curr_state]
-            if problem.getCostOfActions(path) < prior_node[2]:
-                prior_node[1] = path
-                prior_node[2] = problem.getCostOfActions(path)
-                visited[curr_state] = prior_node
-        else:
-            visited[curr_state] = [curr_state, path, cost]
-        if problem.isGoalState(curr_state): break
-        successors = problem.getSuccessors(curr_state)
-        for successor in successors:
-            state, p, c = successor
-            to_push = [state, path + [p], cost + c]
-            if state not in visited:
-                visited[state] = to_push
-                q.push(to_push, cost + c)
 
-            else:
-                if cost + c < visited[state][2]:
-                    visited[state] = to_push
-                    q.push(to_push, cost + c)
+    container = util.PriorityQueue()
+    def push(container, state, cost):
+        container.push(state, cost)
+    return genericSearch(problem, container, push)
 
-    return path
+def nullHeuristic(state, problem=None):
+    """
+    A heuristic function estimates the cost from the current state to the nearest
+    goal in the provided SearchProblem.  This heuristic is trivial.
+    """
+    return 0
+
+def aStarSearch(problem, heuristic=nullHeuristic):
+    """Search the node that has the lowest combined cost and heuristic first."""
+    container = util.PriorityQueue()
+    def push(container, state, cost):
+        cost = cost + heuristic(state[0], problem)
+        container.push(state, cost)
+    return genericSearch(problem, container, push)
 
 def iterativeDeepening(problem):
     limit = 0
@@ -187,52 +164,6 @@ def depthLimitedSearch(problem, limit):
                 visited[state] = state
                 stack.push((state, path + [p], cost, curr_depth + 1))
     return [path, found]
-
-
-
-def nullHeuristic(state, problem=None):
-    """
-    A heuristic function estimates the cost from the current state to the nearest
-    goal in the provided SearchProblem.  This heuristic is trivial.
-    """
-    return 0
-
-def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    q = util.PriorityQueue()
-    start_state = problem.getStartState()
-    path = []
-    visited = {}
-    q.push((start_state, path, 0), 0)
-    while not q.isEmpty():
-        curr_state, path, cost = q.pop()
-
-        if curr_state in visited:
-            prior_node = visited[curr_state]
-            if problem.getCostOfActions(path) < prior_node[2]:
-                prior_node[1] = path
-                prior_node[2] = problem.getCostOfActions(path)
-                visited[curr_state] = prior_node
-        else:
-            visited[curr_state] = [curr_state, path, cost]
-        if problem.isGoalState(curr_state): break
-        successors = problem.getSuccessors(curr_state)
-        for successor in successors:
-            state, p, c = successor
-            to_push = [state, path + [p], \
-                       problem.getCostOfActions(path + [p]) + heuristic(state, problem)]
-            if state not in visited:
-                visited[state] = to_push
-                q.push(to_push, \
-                       problem.getCostOfActions(path + [p]) + heuristic(state, problem))
-
-            else:
-                if problem.getCostOfActions(path + [p]) < visited[state][2]:
-                    visited[state] = to_push
-                    q.push(to_push, \
-                           problem.getCostOfActions(path + [p]) + heuristic(state, problem))
-
-    return path
 
 
 # Abbreviations
