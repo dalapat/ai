@@ -280,9 +280,7 @@ class CornersProblem(search.SearchProblem):
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
         top, right = self.walls.height-2, self.walls.width-2
-        # self.corners = ((1,1), (1,top), (right, 1), (right, top))
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
-        print self.corners
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
                 print 'Warning: no food in corner ' + str(corner)
@@ -298,8 +296,9 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        visited_corners = [(corner, False) for corner in self.corners]
-        return (self.startingPosition,tuple(visited_corners))
+
+        # return the starting position and a list of unvisited corners.
+        return (self.startingPosition, self.corners)
 
 
     def isGoalState(self, state):
@@ -308,12 +307,8 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
 
-        pos,cors=state
-        cs=dict((x,y) for x,y in cors)
-        ret=True
-        for c in cs:
-          ret=ret and cs[c]
-        return ret
+        # return whether or not the state has unvisited corners.
+        return len(state[1]) == 0
 
     def getSuccessors(self, state):
         """
@@ -326,30 +321,30 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
 
-        pos,cors=state
-
+        # list of successors
         successors = []
+
+        # current position, stored in a coordinate pair.
+        x, y = state[0]
+        
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-            cs=dict((x,y) for x,y in cors)
-            x,y=pos
-            dx,dy=Actions.directionToVector(action)
-            nextx,nexty=int(x+dx),int(y+dy)
-            hitsWall=self.walls[nextx][nexty]
-            for c in self.corners:
-              if (nextx,nexty)==c:
-                cs[c]=True
-            if not hitsWall:
-              l=[]
-              for x,y in self.corners:
-                l.append(((x,y),cs[(x,y)]))
-              nextState=((nextx,nexty),tuple(l))
-              successors.append((nextState,action,1))
+
+            # get the next position based on action
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+
+            # if the next position is not a wall, add it to successors
+            # if the next position is a corner, make sure to remove that
+            # corner from its unvisted corners list.
+            if not self.walls[nextx][nexty]:
+
+                corners = []
+                for corner in state[1]:
+                    if not (nextx, nexty) == corner:
+                        corners.append(corner)
+                next_state = ((nextx, nexty), tuple(corners))
+                successors.append((next_state, action, 1))
+                
         self._expanded += 1
         return successors
 
@@ -384,11 +379,13 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
+
+    # calculate the manhattan distance from the current position to all unvisited corners.
     mdists = [0]
-    wscores = [0]
     for corner in state[1]:
-        if not corner[1]:
-            mdists.append(util.manhattanDistance(state[0], corner[0]))
+        mdists.append(util.manhattanDistance(state[0], corner))
+
+    # return the maximum of the calculated manhattan distances.
     return (max(mdists))
 
             
@@ -491,21 +488,14 @@ def foodHeuristic(state, problem):
     food_list = foodGrid.asList()
     gameState = problem.getGameState()
     distances = []
-    md_farthest = 0
-    closer = 0
+
+    # calculate the manhattan distance between the current position and all food.
     for cell in food_list:
         distances.append((util.manhattanDistance(position, cell), cell))
     distances.sort()
-    '''
-    if len(distances) >= 2:
-        md_farthest = util.manhattanDistance(distances[-1][1], distances[-2][1])
-        closer = util.manhattanDistance(position, distances[-2][1])
-    elif len(distances) == 1:
-        closer = util.manhattanDistance(position, distances[-1][1])
-    else:
-        return 0
-    return md_farthest + closer
-    '''
+
+    # return the mazeDistance of the position to the food that is the furthest
+    # away based on the manhattan distance. 
     if len(distances) > 0:
         return mazeDistance(position, distances[-1][1], gameState)
     return 0

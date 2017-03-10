@@ -73,16 +73,31 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def genericSearch(problem, container, push):
-    
+    """
+    Generic search function. Takes a problem, a container which MUST
+    have a defined pop method (so Stack, Queue, PriorityQueue...),
+    and takes a method which defines how to add new states to the
+    container.
+    """
+
+    # keep track of which states have been visited.
     visited = {}
+
+    # push the starting state to our container
     push(container, (problem.getStartState(), [], 0), 0)
-    
+
+    # while the container is not empty
     while not container.isEmpty():
+
+        # grab the current state and remove it from container
         state, path, cost = container.pop()
-        
+
+        # check if the state is a goal state. If so, return path.
         if problem.isGoalState(state):
             return path
 
+        # if the state is not a goal state, add it to visited list and expand.
+        # Add the expanded nodes into the container.
         if not state in visited:
             visited[state] = state
             for successor in problem.getSuccessors(state):
@@ -94,6 +109,8 @@ def genericSearch(problem, container, push):
 def depthFirstSearch(problem):
     """Search the deepest nodes in the search tree first."""
 
+    # DFS pushes newly expanded nodes to the front,
+    # thus we want first in last out (a Stack).
     container = util.Stack()
     def push(container, state, cost):
         container.push(state)
@@ -103,6 +120,9 @@ def depthFirstSearch(problem):
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
+
+    # BFS pushes newly expanded nodes to the back,
+    # thus we want first in first out (a Queue)
     container = util.Queue()
     def push(container, state, cost):
         container.push(state)
@@ -112,6 +132,9 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
 
+    # UCS pushes newly expanded nodes into the ordering
+    # based on a cost (in this case uniform). So we want
+    # a PriorityQueue.
     container = util.PriorityQueue()
     def push(container, state, cost):
         container.push(state, cost)
@@ -126,6 +149,9 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
+
+    # A* pushes newly expanded nodes into the ordering
+    # based on a cost So we want a PriorityQueue.
     container = util.PriorityQueue()
     def push(container, state, cost):
         cost = cost + heuristic(state[0], problem)
